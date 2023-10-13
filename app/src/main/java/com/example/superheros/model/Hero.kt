@@ -10,6 +10,6 @@ data class Hero(
     @StringRes val descriptionResourceID: Int,
     @StringRes val vulnResourceId: Int,
     @StringRes val vulndetailResourceId: Int,
-    @StringRes val heroWeakness: Int
+
 )
 

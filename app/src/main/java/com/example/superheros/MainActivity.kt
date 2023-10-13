@@ -1,16 +1,17 @@
 package com.example.superheros
 
-import android.graphics.Paint.Style
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.StringRes
+
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 
 import androidx.compose.foundation.layout.Row
@@ -19,8 +20,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -40,13 +43,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.superheros.data.DataSource
-import com.example.superheros.data.DataSource.heros
+
 import com.example.superheros.model.Hero
 import com.example.superheros.ui.theme.SuperHerosTheme
 
@@ -60,7 +65,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SuperHeroApp()
+                    HeroApp()
                 }
             }
         }
@@ -74,8 +79,8 @@ fun SuperHeroAppBar (modifier: Modifier = Modifier) {
                 Image(
                     modifier = Modifier
                         .size(64.dp)
-                        .padding(8.dp),
-                    painter = painterResource(R.drawable.ic_launcher_background),
+                        .padding(4.dp),
+                    painter = painterResource(id =R.drawable.ic_launcher_foreground),
                     contentDescription = null
                 )
                 Text(
@@ -93,28 +98,18 @@ fun SuperHeroAppBar (modifier: Modifier = Modifier) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HeroApp() {
-    Scaffold(
+    Scaffold (
         topBar = {
-            HeroApp()
+            SuperHeroAppBar()
         }
     ) { it ->
         LazyColumn(contentPadding = it) {
-            items(heros) {
+            items(DataSource.heros) {
                 HeroItem(
                     hero = it,
-                    modifier = Modifier.padding(dimensionResource(id = R.dimen.pa1dding_small))
+                    modifier = Modifier.padding(8.dp)
                 )
             }
-        }
-    }
-}
-
-
-@Composable
-fun SuperHeroApp() {
-    LazyColumn {
-        items(DataSource.heros) {
-            HeroItem(hero = it)
         }
     }
 }
@@ -127,21 +122,27 @@ fun HeroItem(
     var expanded by remember { mutableStateOf(false) }
     val color by animateColorAsState(
         targetValue = if (expanded) MaterialTheme.colorScheme.tertiaryContainer
-        else MaterialTheme.colorScheme.primaryContainer
+        else MaterialTheme.colorScheme.primaryContainer, label=""
     )
 
-    Card(modifier = modifier) {
-        Column (
-            modifier = Modifier
-                .animateContentSize(
-                        animationSpec = spring(
-                            dampingRatio = Spring.DampingRatioNoBouncy,
-                            stiffness = Spring.StiffnessMedium
+    Card(modifier = modifier
 
-                        )
+        .clickable {expanded =!expanded}
+    )
+    {
+        Column(
+            modifier = modifier
+
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = Spring.DampingRatioNoBouncy,
+                        stiffness = Spring.StiffnessMedium,
+
+
+                    )
                 )
                 .background(color = color)
-        ){
+        ) {
 
         }
         Row(
@@ -149,46 +150,59 @@ fun HeroItem(
                 .fillMaxWidth()
                 .padding(8.dp)
         ) {
-            Image(
-                modifier = Modifier
-                    .size(64.dp)
-                    .padding(8.dp),
-                painter = painterResource(hero.imageResourceId),
-                contentDescription = null
-            )
 
-            Column() {
+
+            Column( modifier = Modifier
+                .weight(1f)
+                .padding(
+                    start =4.dp,
+                    top = 8.dp,
+                    end = 8.dp,
+                    bottom = 8.dp)
+            )
+            {
                 Text(
                     text = stringResource(hero.heroResourceID),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(top = 8.dp)
+                    style = MaterialTheme.typography.displaySmall,
+                    //modifier = Modifier.padding(bottom = 8.dp)
                 )
                 Text(
                     text = stringResource(hero.descriptionResourceID),
-                    modifier = Modifier.padding(top = 8.dp)
+                    style = MaterialTheme.typography.bodyLarge,
                 )
             }
-                Spacer(modifier = Modifier.weight(1f))
-                HeroItemButton(
-                    expanded = expanded,
-                    onClick = { /*TODO*/ }
-                )
-            }
-        if (expanded){
+            Spacer(modifier = Modifier.width(16.dp))
+            HeroItemButton(
+                expanded = expanded,
+                onClick = { expanded = !expanded }
+            )
+            Image(
+                modifier = Modifier
+                    .size(72.dp)
+                    .padding(0.dp)
+                    .clip(MaterialTheme.shapes.small),
+                contentScale = ContentScale.Crop,
+                painter = painterResource(hero.imageResourceId),
+                contentDescription = null
+            )
+        }
+        if (expanded) {
             HeroWeakness(
-                hero.heroWeakness,
+                heroResource = hero.vulnResourceId,
+                vulnDetail = hero.vulndetailResourceId,
                 modifier = Modifier.padding(
-                    start = 16.dp,
+                    start = 12.dp,
                     top = 8.dp,
                     end = 16.dp,
                     bottom = 16.dp
 
+                )
             )
-        )
 
         }
     }
 }
+
 @Composable
 private fun HeroItemButton(
     expanded: Boolean,
@@ -208,29 +222,34 @@ private fun HeroItemButton(
 }
 @Composable
 fun HeroWeakness(
-    @StringRes heroWeakness: Int,
+    heroResource: Int,
+    vulnDetail: Int,
+
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
     ) {
         Text(
-            text = stringResource(R.string.vuln1),
-            style = MaterialTheme.typography.labelSmall
+            text = stringResource(heroResource),
+            style = MaterialTheme.typography.labelLarge,
+            
         )
         Text(
-            text = stringResource(R.string.vulndetail1),
-            style = MaterialTheme.typography.bodyLarge
+            text = stringResource(vulnDetail),
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 
 }
 
 
+
+
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    SuperHerosTheme {
-        SuperHeroApp()
+    SuperHerosTheme(darkTheme = false) {
+        HeroApp()
     }
 }
